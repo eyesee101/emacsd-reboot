@@ -166,10 +166,6 @@ configuration stored by magit-status-fullscreen"
 (defvar magit-subject-info nil
   "Subjects that have extra information for the committer.")
 
-(unless (equal (getenv "USER") "teodorlu")
-  (put 'magit-subject-commit-range 'safe-local-variable #'stringp)
-  (put 'magit-subject-info 'safe-local-variable #'listp))
-
 (defun my/git-subject-suggestions ()
   "Extract distinct commit message subjects from the last 9999 commits."
   (let ((subjects '()))
