@@ -168,10 +168,9 @@ configuration stored by magit-status-fullscreen"
 
 (defun my/git-subject-suggestions ()
   "Extract distinct commit message subjects from the last 9999 commits."
-  (let ((subjects '()))
-    (dolist (msg (magit-git-lines "log"
-                                  (or magit-subject-commit-range "-n9999")
-                                  "--format=%s"))
+  (let ((subjects '())
+        (range (or magit-subject-commit-range "-n9999")))
+    (dolist (msg (magit-git-lines "log" range "--format=%s"))
       (when (string-match "\\`\\([^:]+\\): " msg)
         (let ((subject (format "%s: " (match-string 1 msg))))
           (unless (member subject subjects)
@@ -181,12 +180,12 @@ configuration stored by magit-status-fullscreen"
 (defun my/git-choose-subject ()
   (interactive)
   (when (and (bobp) (looking-at "\n"))
-    (let* ((collection
-            (lambda (string pred action)
-              (if (eq action 'metadata)
-                  '(metadata (display-sort-function . identity)
-                             (cycle-sort-function . identity))
-                (complete-with-action action (my/git-subject-suggestions) string pred))))
+    (let* ((suggestions (my/git-subject-suggestions))
+           (collection (lambda (string pred action)
+                         (if (eq action 'metadata)
+                             '(metadata (display-sort-function . identity)
+                                        (cycle-sort-function . identity))
+                           (complete-with-action action suggestions string pred))))
            (subject (completing-read "Subject: " collection)))
       (insert subject)
       (when-let ((entry (assoc subject magit-subject-info)))
